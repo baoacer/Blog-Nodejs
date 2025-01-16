@@ -1,10 +1,7 @@
 const express = require('express')
 const app = express();
-const Router = express.Router()
 
-require('./database/init.mongodb')
-
-Router.use(require('./routers/index'))
+const database = require('./database/init.mongodb')
 
 module.exports = app
 
