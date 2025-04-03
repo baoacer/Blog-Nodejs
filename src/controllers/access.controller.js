@@ -6,14 +6,29 @@ class AccessController{
         new SuccessResponse({
             message: "Sign Up Success",
             metadata: await AccessService.signUp(req.body)
-        }).send(res)
+        }).send(res);
     }
 
     static signIn = async (req, res, next) => {
-        new SuccessResponse({
-            message: "Sign In Success",
-            metadata: await AccessService.signIn(req.body)
-        }).send(res)
+        try {
+            const result = await AccessService.signIn(req.body);
+
+            res.cookie("refreshToken", result.RefreshToken, {
+                httpOnly: true,
+                secure: false,  
+                sameSite: "Strict"
+            });
+            
+            new SuccessResponse({
+                message: "Sign In Success",
+                metadata: {
+                    user: result.user,
+                    accessToken: result.AccessToken
+                }
+            }).send(res);
+        } catch (error) {
+            next(error); 
+        }
     }
 
     static refreshToken = async (req, res, next) => {

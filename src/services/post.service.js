@@ -4,8 +4,10 @@ const UserService = require("./user.service");
 const mongoose = require("mongoose");
 const { NotFoundError } = require("../core/error.response");
 class PostService {
+
   static async createPost(payload) {
     const { post_author_id } = payload;
+    console.log("create post author id",  post_author_id)
     const author = await UserService.findById(post_author_id);
     if (!author) {
       throw new NotFoundError("User not found");

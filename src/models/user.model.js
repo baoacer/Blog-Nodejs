@@ -16,8 +16,7 @@ const userSchema = new Schema({
             linkedin: { type: String },
             website: { type: String }
         }
-    },
-    refreshToken: { type: String }
+    }
 }, {
     timestamps: true,
     collection: COLLECTION_NAME

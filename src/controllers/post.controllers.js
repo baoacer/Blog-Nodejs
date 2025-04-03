@@ -3,7 +3,6 @@ const { SuccessResponse } = require("../core/success.response")
 
 
 class PostController {
-    // Tạo bài viết mới
     static async createPost(req, res) {
         new SuccessResponse({
             message: "Create Success",
@@ -11,7 +10,6 @@ class PostController {
         }).send(res)
     }
    
-    // 📌 Lấy danh sách bài viết
     static async getPosts(req, res) {
         const { cursor, limit } = req.query;
         new SuccessResponse({
@@ -20,7 +18,6 @@ class PostController {
         }).send(res)
     }
 
-    // Lay post bang id
     static async getPostById(req, res) {
         const { id } = req.params;
         new SuccessResponse({
@@ -29,14 +26,13 @@ class PostController {
         }).send(res)
     }
 
-    // xoa post = id
     static async deletePost(req, res) {
         new SuccessResponse({
             message: "Delete Success",
             metadata: await PostService.deletePost(req.query.id)
         }).send(res)
     }
-    // update post bang id
+
     static async updatePost(req, res) {
         try {
             const { id } = req.params;
@@ -56,6 +52,6 @@ class PostController {
     }
 }
 
-module.exports = PostController;
+module.exports = PostController
 
 

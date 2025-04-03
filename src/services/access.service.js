@@ -40,9 +40,6 @@ class AccessService{
         const accessToken = AuthUtil.createAccessToken(existsUser._id)
         const refreshToken = AuthUtil.createRefreshToken(existsUser._id)
 
-        existsUser.refreshToken = refreshToken
-        existsUser.save()
-
         // 4 - return
         return {
             user: {
