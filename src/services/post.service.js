@@ -3,11 +3,10 @@ const Post = require("../models/post.model");
 const UserService = require("./user.service");
 const mongoose = require("mongoose");
 const { NotFoundError } = require("../core/error.response");
-class PostService {
 
+class PostService {
   static async createPost(payload) {
     const { post_author_id } = payload;
-    console.log("create post author id",  post_author_id)
     const author = await UserService.findById(post_author_id);
     if (!author) {
       throw new NotFoundError("User not found");
@@ -20,7 +19,8 @@ class PostService {
     console.log(`Cursor: ${cursor}, Limit: ${limit}`);
     const query = {};
     if (cursor && cursor !== "null" && cursor !== "undefined") {
-      query._id = { $lt: cursor };
+      const cursorObjectId = new mongoose.Types.ObjectId(cursor);
+      query._id = { $lt: cursorObjectId };
     }
 
     const posts = await Post.aggregate([
@@ -35,7 +35,7 @@ class PostService {
           as: "author",
         },
       },
-      { $unwind: "$author" }, 
+      { $unwind: "$author" },
       {
         $project: {
           post_content: 1,
@@ -58,14 +58,33 @@ class PostService {
     };
   }
 
-  static async getPostById(id) {
+  static getPostsById = async ({ cursor, limit, authorId }) => {
     try {
-      const post = await Post.findById(id).lean();
-      return post;
+      const query = {
+        post_author_id: authorId,
+      };
+      if (cursor && cursor !== "null" && cursor !== "undefined") {
+        query._id = { $lt: cursor };
+      }
+
+      const posts = await Post.find({ post_author_id: authorId }) 
+        .sort({ createdAt: -1 }) 
+        .populate("post_author_id", "fullname profile.avatar") 
+        .limit(+limit)
+        .exec();
+
+      const nextCursor = posts.length ? posts[posts.length - 1]._id : null;
+
+      return {
+        posts,
+        nextCursor,
+      };
     } catch (error) {
-      throw new Error("Post not found");
+      console.error("Error fetching posts by authorId:", error);
+      return [];
     }
-  }
+  };
+
   static async deletePost(id) {
     try {
       console.log(`Delete post with id: ${id}`);
@@ -85,26 +104,6 @@ class PostService {
       if (!mongoose.Types.ObjectId.isValid(id)) {
         throw new Error("ID không hợp lệ");
       }
-
-      // Tạo slug tự động nếu không có
-      if (!payload.post_slug && payload.post_title) {
-        payload.post_slug = slugify(payload.post_title, {
-          lower: true,
-          strict: true,
-        });
-      }
-
-      // Kiểm tra slug có bị trùng không
-      if (payload.post_slug) {
-        let newSlug = payload.post_slug;
-        let count = 1;
-        while (await Post.exists({ post_slug: newSlug, _id: { $ne: id } })) {
-          newSlug = `${payload.post_slug}-${count}`;
-          count++;
-        }
-        payload.post_slug = newSlug;
-      }
-
       // Cập nhật bài viết
       const post = await Post.findByIdAndUpdate(id, payload, {
         new: true,
@@ -124,16 +123,16 @@ class PostService {
   static async searchPost({ keyword }) {
     console.log(`Search post with keyword: ${keyword}`);
     try {
-      const post = await Post.find(
-        { post_content: { $regex: keyword, $options: "i" } }
-      )
-      .sort({ createdAt: -1 })
-      .lean()
+      const post = await Post.find({
+        post_content: { $regex: keyword, $options: "i" },
+      })
+        .sort({ createdAt: -1 })
+        .lean();
 
-      return post
+      return post;
     } catch (error) {
-      console.error("Lỗi khi tìm bài viết theo tiêu đề:", error)
+      console.error("Lỗi khi tìm bài viết theo tiêu đề:", error);
     }
   }
 }
-module.exports = PostService
+module.exports = PostService;

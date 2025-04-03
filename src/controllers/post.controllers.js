@@ -19,10 +19,13 @@ class PostController {
     }
 
     static async getPostById(req, res) {
-        const { id } = req.params;
+        const { cursor, limit, id } = req.params;
+        console.log("cusror", cursor);
+        console.log("id", id);
+
         new SuccessResponse({
             message: "Get Post By Id Success",
-            metadata: await PostService.getPostById(id)
+            metadata: await PostService.getPostsById({ cursor, limit, authorId: id })
         }).send(res)
     }
 
@@ -36,7 +39,8 @@ class PostController {
     static async updatePost(req, res) {
         try {
             const { id } = req.params;
-            const payload = req.body;
+            console.log("id", id);
+            console.log("payload", req.body);
             const result = await PostService.updatePost(id, req.body);
             return res.status(200).json(result);
         } catch (error) {

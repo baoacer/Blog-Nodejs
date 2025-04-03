@@ -22,7 +22,6 @@ class AuthUtil {
   };
 
   static authentication = async (req, res, next) => {
-    // 1 - Check shopId in header
     const userId = req.headers[HEADER.CLIENT_ID];
     if (!userId) throw new AuthFailureError("Invalid Request");
 

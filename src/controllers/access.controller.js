@@ -42,6 +42,11 @@ class AccessController{
     }
 
     static signOut = async (req, res, next) => {
+        res.clearCookie("refreshToken", {
+            httpOnly: true, 
+            secure: false,  
+            sameSite: "Strict" 
+        });
         new SuccessResponse({
             message: "Sign Out Success",
             metadata: await AccessService.signOut(req.user)

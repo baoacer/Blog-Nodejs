@@ -3,7 +3,7 @@ const router = express.Router()
 const UserController = require('../../controllers/user.controllers')
 const asyncHandler = require('../../helpers/asyncHandler')
 
-router.get('', UserController.getUserById);
+router.get('', asyncHandler(UserController.getUserById));
 
 module.exports = router
 
